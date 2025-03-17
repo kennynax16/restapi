@@ -9,16 +9,11 @@ use Illuminate\Http\JsonResponse;
 
 class LikeController extends Controller
 {
-    protected LikeService $likeService;
 
-    public function __construct(LikeService $likeService)
-    {
-        $this->likeService = $likeService;
-    }
 
-    public function toggleLike(Card $card): JsonResponse
+    public function toggleLike(Card $card ,LikeService $likeService): JsonResponse
     {
-        $result = $this->likeService->toggleLike($card);
+        $result = $likeService->toggleLike($card);
 
         return response()->json([
             'isLiked' => $result['isLiked'],

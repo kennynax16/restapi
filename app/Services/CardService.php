@@ -2,21 +2,25 @@
 
 namespace App\Services;
 
+use App\DTOs\CardDTO;
 use App\Models\Card;
 use Illuminate\Http\Request;
+use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Storage;
 
 class CardService
 {
-    public function createCard(array $data, Request $request): Card
+    public function createCard(CardDTO $cardDTO): Card
     {
         $card = new Card();
-        $card->user_id = Auth::id();
-        $card->name = $data['name'];
-        $card->description = $data['description'] ?? null;
+        $card->user_id = Auth::id(); // Привязываем карточку к пользователю
+        $card->name = $cardDTO->title; // Используем DTO
+        $card->description = $cardDTO->description ?? null;
 
-        if ($request->hasFile('photo')) {
-            $path = $request->file('photo')->store('uploads', 'public');
+        // Проверяем, есть ли изображение
+        if (!empty($cardDTO->photo) && $cardDTO->photo instanceof \Illuminate\Http\UploadedFile) {
+            $path = $cardDTO->photo->store('uploads', 'public');
             $card->url_photo = $path;
         }
 
@@ -24,13 +28,20 @@ class CardService
         return $card;
     }
 
-    public function updateCard(Card $card, array $data, Request $request): Card
+    public function updateCard(Card $card, CardDTO $cardDTO): Card
     {
-        $card->name = $data['name'];
-        $card->description = $data['description'] ?? $card->description;
+        $card->name = $cardDTO->name;
+        $card->description = $cardDTO->description;
 
-        if ($request->hasFile('photo')) {
-            $path = $request->file('photo')->store('uploads', 'public');
+        // Если загружен новый файл — обновляем фото
+        if ($cardDTO->photo instanceof UploadedFile) {
+            // Удаляем старое фото, если оно есть
+            if (!empty($card->url_photo)) {
+                Storage::disk('public')->delete($card->url_photo);
+            }
+
+            // Загружаем новое фото
+            $path = $cardDTO->photo->store('uploads', 'public');
             $card->url_photo = $path;
         }
 

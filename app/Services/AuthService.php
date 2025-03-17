@@ -2,6 +2,7 @@
 
 namespace App\Services;
 
+use App\DTOs\AuthDTO;
 use App\Models\User;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
@@ -11,18 +12,22 @@ class AuthService
     /**
      * Регистрация пользователя
      */
-    public function registerUser(array $data): User
+    public function registerUser(AuthDTO $authDTO): User
     {
-        $data['password'] = Hash::make($data['password']); // Хешируем пароль
-        return User::create($data);
+
+        return User::create([
+
+            'name' => $authDTO->name,
+            'email' => $authDTO->email,
+            'password' => Hash::make($authDTO->password),]);
     }
 
     /**
      * Аутентификация пользователя и выдача токена
      */
-    public function loginUser(array $credentials): array
+    public function loginUser(AuthDTO $authDTO): array
     {
-        if (!Auth::attempt($credentials)) {
+        if (!Auth::attempt($authDTO->toArray())) {
             return ['error' => 'Invalid credentials'];
         }
 

@@ -53,7 +53,9 @@ class CardPolicy
      */
     public function update(User $user, Card $card)
     {
-        return $user->id === $card->user_id;
+
+        return true;
+       // return $user->id === $card->user_id;
     }
 
     /**
@@ -65,7 +67,9 @@ class CardPolicy
      */
     public function delete(User $user, Card $card)
     {
-        return $user->id === $card->user_id;
+
+        return true;
+       // return $user->id === $card->user_id;
     }
 
     /**

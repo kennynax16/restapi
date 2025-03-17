@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\DTOs\AuthDTO;
 use App\Http\Requests\Auth\LoginRequest;
 use App\Http\Requests\Auth\RegisterRequest;
 use App\Http\Resources\UserResource;
@@ -10,19 +11,15 @@ use Illuminate\Http\Request;
 
 class AuthController extends Controller
 {
-    protected AuthService $authService;
 
-    public function __construct(AuthService $authService)
-    {
-        $this->authService = $authService;
-    }
 
     /**
      * Регистрация пользователя
      */
-    public function register(RegisterRequest $request)
+    public function register(RegisterRequest $request ,AuthService $authService)
     {
-        $user = $this->authService->registerUser($request->validated());
+        $authDTO = AuthDTO::fromArray($request->validated());
+        $user = $authService->registerUser($authDTO);
 
         return response()->json([
             'user' => new UserResource($user),
@@ -33,9 +30,12 @@ class AuthController extends Controller
     /**
      * Вход пользователя
      */
-    public function login(LoginRequest $request)
+    public function login(LoginRequest $request  ,AuthService $authService)
     {
-        $result = $this->authService->loginUser($request->validated());
+
+        $authDTO = AuthDTO::fromArray($request->validated());
+        // Передаём его в сервис
+        $result = $authService->loginUser($authDTO);
 
         if (isset($result['error'])) {
             return response()->json(['message' => $result['error']], 401);
@@ -51,9 +51,9 @@ class AuthController extends Controller
     /**
      * Выход пользователя
      */
-    public function logout(Request $request)
+    public function logout(Request $request ,AuthService $authService)
     {
-        $this->authService->logoutUser($request->user());
+        $authService->logoutUser($request->user());
 
         return response()->json(['message' => 'Logged out']);
     }

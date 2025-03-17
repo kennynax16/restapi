@@ -2,32 +2,30 @@
 
 namespace App\Http\Controllers;
 
+use App\DTOs\CardDTO;
 use App\Http\Requests\Card\StoreRequest;
 use App\Http\Requests\Card\UpdateRequest;
 use App\Http\Resources\CardResource;
 use App\Models\Card;
+use App\Services\AuthService;
 use App\Services\CardService;
 use Illuminate\Http\Request;
 
 class CardController extends Controller
 {
-    protected CardService $cardService;
-
-    public function __construct(CardService $cardService)
-    {
-        $this->cardService = $cardService;
-    }
 
     public function index()
     {
         $cards = Card::with('likes')->paginate(9);
+
         return (CardResource::collection($cards))->toResponse(request());
     }
 
-    public function store(StoreRequest $request)
+    public function store(StoreRequest $request, CardService $cardService)
     {
-        $validated = $request->validated();
-        $card = $this->cardService->createCard($validated, $request);
+        $cardDTO = CardDTO::fromCreate($request->validated()) ;
+        $card = $cardService->createCard($cardDTO);
+
         return new CardResource($card);
     }
 
@@ -36,18 +34,23 @@ class CardController extends Controller
         return new CardResource($card);
     }
 
-    public function update(UpdateRequest $request, Card $card)
+    public function update(UpdateRequest $request, Card $card, CardService $cardService)
     {
         $this->authorize('update', $card); // Проверка через Policy
-        $validated = $request->validated();
-        $card = $this->cardService->updateCard($card, $validated, $request);
+
+
+        $cardDTO = CardDTO::fromUpdate($request->validated(), $card);
+        $card = $cardService->updateCard($card, $cardDTO);
+
         return new CardResource($card);
     }
 
-    public function destroy(Card $card)
+
+    public function destroy(Card $card ,CardService $cardService)
     {
         $this->authorize('delete', $card); // Проверка через Policy
-        $this->cardService->deleteCard($card);
+        $cardService->deleteCard($card);
+
         return response()->json(['message' => 'Card deleted']);
     }
 }
