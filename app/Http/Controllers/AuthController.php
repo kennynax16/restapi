@@ -7,6 +7,7 @@ use App\Http\Requests\Auth\LoginRequest;
 use App\Http\Requests\Auth\RegisterRequest;
 use App\Http\Resources\UserResource;
 use App\Services\AuthService;
+use App\Services\Contracts\IAuthService;
 use Illuminate\Http\Request;
 
 class AuthController extends Controller
@@ -16,7 +17,7 @@ class AuthController extends Controller
     /**
      * Регистрация пользователя
      */
-    public function register(RegisterRequest $request ,AuthService $authService)
+    public function register(RegisterRequest $request ,IAuthService $authService)
     {
         $authDTO = AuthDTO::fromArray($request->validated());
         $user = $authService->registerUser($authDTO);
@@ -30,7 +31,7 @@ class AuthController extends Controller
     /**
      * Вход пользователя
      */
-    public function login(LoginRequest $request  ,AuthService $authService)
+    public function login(LoginRequest $request  ,IAuthService $authService)
     {
 
         $authDTO = AuthDTO::fromArray($request->validated());
@@ -51,7 +52,7 @@ class AuthController extends Controller
     /**
      * Выход пользователя
      */
-    public function logout(Request $request ,AuthService $authService)
+    public function logout(Request $request ,IAuthService $authService)
     {
         $authService->logoutUser($request->user());
 

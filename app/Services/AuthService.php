@@ -4,34 +4,45 @@ namespace App\Services;
 
 use App\DTOs\AuthDTO;
 use App\Models\User;
+use App\Repositories\Contracts\IUserRepository;
+use App\Services\Contracts\IAuthService;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
 
-class AuthService
+
+class AuthService implements IAuthService
 {
+    private IUserRepository $userRepository;
+
+    public function __construct(IUserRepository $userRepository)
+    {
+        $this->userRepository = $userRepository;
+    }
+
+
     /**
      * Регистрация пользователя
      */
-    public function registerUser(AuthDTO $authDTO): User
+    public function registerUser(AuthDTO $authDTO ): User
     {
-
-        return User::create([
-
+        return $this->userRepository->create([
             'name' => $authDTO->name,
             'email' => $authDTO->email,
-            'password' => Hash::make($authDTO->password),]);
+            'password' => Hash::make($authDTO->password)
+        ]);
     }
 
     /**
      * Аутентификация пользователя и выдача токена
      */
-    public function loginUser(AuthDTO $authDTO): array
+    public function loginUser(AuthDTO $authDTO): ?array
     {
-        if (!Auth::attempt($authDTO->toArray())) {
-            return ['error' => 'Invalid credentials'];
+        $user = $this->userRepository->findByEmail($authDTO->email);
+
+        if (!$user || !Hash::check($authDTO->password, $user->password)) {
+            return null; // Ошибка аутентификации
         }
 
-        $user = Auth::user();
         $token = $user->createToken('API Token')->plainTextToken;
 
         return [
@@ -43,7 +54,7 @@ class AuthService
     /**
      * Выход пользователя (удаление токена)
      */
-    public function logoutUser($user): void
+    public function logoutUser( User $user): void
     {
         $user->currentAccessToken()->delete();
     }

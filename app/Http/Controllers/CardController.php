@@ -9,6 +9,7 @@ use App\Http\Resources\CardResource;
 use App\Models\Card;
 use App\Services\AuthService;
 use App\Services\CardService;
+use App\Services\Contracts\ICardService;
 use Illuminate\Http\Request;
 
 class CardController extends Controller
@@ -21,7 +22,7 @@ class CardController extends Controller
         return (CardResource::collection($cards))->toResponse(request());
     }
 
-    public function store(StoreRequest $request, CardService $cardService)
+    public function store(StoreRequest $request, ICardService $cardService)
     {
         $cardDTO = CardDTO::fromCreate($request->validated()) ;
         $card = $cardService->createCard($cardDTO);
@@ -34,7 +35,7 @@ class CardController extends Controller
         return new CardResource($card);
     }
 
-    public function update(UpdateRequest $request, Card $card, CardService $cardService)
+    public function update(UpdateRequest $request, Card $card, ICardService $cardService)
     {
         $this->authorize('update', $card); // Проверка через Policy
 
@@ -46,7 +47,7 @@ class CardController extends Controller
     }
 
 
-    public function destroy(Card $card ,CardService $cardService)
+    public function destroy(Card $card ,ICardService $cardService)
     {
         $this->authorize('delete', $card); // Проверка через Policy
         $cardService->deleteCard($card);

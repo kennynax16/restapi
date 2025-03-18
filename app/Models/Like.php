@@ -8,15 +8,10 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 class Like extends Model
 {
     use HasFactory;
-    protected $fillable = ['card_id','user_id'];
+    protected $fillable = ['user_id'];
 
-    public function card()
+    public function likeable(): MorphTo
     {
-        return $this->belongsTo(Card::class);
-    }
-
-    public function user()
-    {
-        return $this->belongsTo(User::class);
+        return $this->morphTo();
     }
 }

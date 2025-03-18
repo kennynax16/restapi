@@ -2,32 +2,35 @@
 
 namespace App\Services;
 
-use App\Models\Card;
-use App\Models\Like;
-use Illuminate\Support\Facades\Auth;
+use App\Services\Contracts\ILikeService;
+use App\DTO\LikeDTO;
 
-class LikeService
+class LikeService implements ILikeService
 {
-    public function toggleLike(Card $card): array
+    public function like(LikeDTO $dto)
     {
-        $userId = Auth::id();
-        $existingLike = Like::where('card_id', $card->id)->where('user_id', $userId)->first();
-
-        if ($existingLike) {
-            $existingLike->delete();
-            return [
-                'isLiked' => false,
-                'likeCount' => $card->likes()->count(),
-                'latestLike' => null
-            ];
+        if (!method_exists($dto->model, 'likes')) {
+            throw new \Exception("Model " . get_class($dto->model) . " does not support likes.");
         }
 
-        $latestLike = $card->likes()->create(['user_id' => $userId]);
+        return $dto->model->likes()->firstOrCreate(['user_id' => $dto->userId]);
+    }
 
-        return [
-            'isLiked' => true,
-            'likeCount' => $card->likes()->count(),
-            'latestLike' => $latestLike
-        ];
+    public function unlike(LikeDTO $dto)
+    {
+        if (!method_exists($dto->model, 'likes')) {
+            throw new \Exception("Model " . get_class($dto->model) . " does not support likes.");
+        }
+
+        return $dto->model->likes()->where('user_id', $dto->userId)->delete();
+    }
+
+    public function hasLiked(LikeDTO $dto): bool
+    {
+        if (!method_exists($dto->model, 'likes')) {
+            return false;
+        }
+
+        return $dto->model->likes()->where('user_id', $dto->userId)->exists();
     }
 }

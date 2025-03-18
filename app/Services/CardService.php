@@ -4,12 +4,13 @@ namespace App\Services;
 
 use App\DTOs\CardDTO;
 use App\Models\Card;
+use App\Services\Contracts\ICardService;
 use Illuminate\Http\Request;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Storage;
 
-class CardService
+class CardService implements ICardService
 {
     public function createCard(CardDTO $cardDTO): Card
     {
