@@ -88,11 +88,13 @@ async function fetchCards(page = 1) {
 function toggleLike(card) {
     axios.post(`/api/cards/${card.id}/like`)
         .then(res => {
-            card.isLiked = res.data.isLiked
-            card.likeCount = res.data.likeCount
+            card.isLiked = res.data.liked;
+            card.likeCount += card.isLiked ? 1 : -1; // Обновляем лайки локально
         })
-        .catch(err => console.error(err))
+        .catch(err => console.error(err));
 }
+
+
 
 onMounted(() => {
     fetchCards()

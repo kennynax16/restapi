@@ -19,7 +19,7 @@ Route::group(['middleware' => 'auth:sanctum'], function() {
     Route::put('/cards/{card}', [CardController::class, 'update']);
     Route::delete('/cards/{card}', [CardController::class, 'destroy']);
 
-    Route::post('/cards/{card}/like', [LikeController::class, 'toggleLike']);
+    Route::post('/cards/{card}/like', [LikeController::class, 'like']);
 
     Route::get('/cards/{card}/comments', [CommentController::class, 'index']);
     Route::post('/cards/{card}/comments', [CommentController::class, 'store']);

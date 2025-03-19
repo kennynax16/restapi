@@ -148,15 +148,19 @@ async function deletePost(cardId) {
 }
 
 
-function toggleLike(cardId) {
-    axios
-        .post(`/api/cards/${cardId}/like`)
-        .then((res) => {
-            card.value.isLiked = res.data.isLiked;
-            card.value.likeCount = res.data.likeCount;
-        })
-        .catch((err) => console.error(err));
+async function toggleLike(cardId) {
+    try {
+        const res = await axios.post(`/api/cards/${cardId}/like`);
+        if (card.value) {
+            card.value.isLiked = res.data.liked;
+            card.value.likeCount += card.value.isLiked ? 1 : -1;
+        }
+    } catch (err) {
+        console.error("Ошибка при лайке", err);
+    }
 }
+
+
 
 
 async function submitUpdate(cardId) {
